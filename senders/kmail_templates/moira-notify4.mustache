@@ -1,0 +1,60 @@
+{
+		"id": "moira-notify6",
+		"name": "moira-notify6",
+		"html": "
+<html>
+	<head>
+		<style type=\"text/css\">
+			table { border-collapse: collapse; }
+			table th, table td { padding: 0.5em; }
+			tr.OK { background-color: #33cc99; color: white; }
+			tr.WARN { background-color: #cccc32; color: white; }
+			tr.ERROR { background-color: #cc0032; color: white; }
+			tr.NODATA { background-color: #d3d3d3; color: black; }
+			tr.EXCEPTION { background-color: #e14f4f; color: white; }
+			th, td { border: 1px solid black; }
+		</style>
+	</head>
+	<body>
+		<h1>{{ name }}</h1>
+		<h3>{{ tags }}</h3>
+		<table>
+			<thead>
+				<tr>
+					<th>Timestamp</th>
+					<th>Target</th>
+					<th>Value</th>
+					<th>Warn</th>
+					<th>Error</th>
+					<th>From</th>
+					<th>To</th>
+					<th>Note</th>
+				</tr>
+			</thead>
+			<tbody>
+				{{#rows}}
+				<tr class=\"{{ state }}\">
+					<td>{{ timestamp }}</td>
+					<td>{{ metric }}</td>
+					<td>{{ value }}</td>
+					<td>{{ warn_value }}</td>
+					<td>{{ error_value }}</td>
+					<td>{{ oldstate }}</td>
+					<td>{{ state }}</td>
+					<td>{{ message }}</td>
+				</tr>
+				{{/rows}}
+			</tbody>
+		</table>
+		<p><a href=\"{{ link }}\">View in Moira</a></p>
+		<br/>
+		{{#desc}}
+		<p>{{{ desc }}}</p>
+		{{/desc}}
+		{{#throttled}}
+		<p>Please, <b>fix your system or tune this trigger</b> to generate less events.</p>
+		{{/throttled}}
+	</body>
+</html>
+"
+}
