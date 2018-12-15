@@ -47,6 +47,7 @@ type mailNotificationVars struct {
 	TriggerState        string              `json:"trigger_state"`
 	TestNotification    bool                `json:"is_test"`
 	PlotCID             string              `json:"plot_cid"`
+	PlotCIDProvided     bool                `json:"plot_cid_provided"`
 }
 
 type content struct {
@@ -120,6 +121,7 @@ func (sender *MailSender) SendEvents(events moira.NotificationEvents, contact mo
 
 	plotContents, plotCID := getPlotContents(plot)
 	mailVars.PlotCID = plotCID
+	mailVars.PlotCIDProvided = len(mailVars.PlotCID) > 0
 
 	args := &mailArgs{
 		Channel:  sender.Channel,
