@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/AlexAkulov/go-humanize"
+
 	"github.com/moira-alert/moira"
 )
 
@@ -32,6 +33,7 @@ type mailArgs struct {
 	Vars     mailNotificationVars `json:"vars"`
 	Template string               `json:"template"`
 	Subject  string               `json:"subject"`
+	Contents []content            `json:"contents,omitempty"`
 }
 
 type mailNotificationVars struct {
@@ -44,12 +46,22 @@ type mailNotificationVars struct {
 	Tags                string              `json:"tags"`
 	TriggerState        string              `json:"trigger_state"`
 	TestNotification    bool                `json:"is_test"`
+	PlotCID             string              `json:"plot_cid"`
+}
+
+type content struct {
+	ContentID   string `json:"id"`
+	ContentName string `json:"name"`
+	ContentType string `json:"type"`
+	ContentData string `json:"data"`
 }
 
 var log moira.Logger
 
-//Init read yaml config
-func (sender *MailSender) Init(senderSettings map[string]string, logger moira.Logger, location *time.Location, dateTimeFormat string) error {
+// Init reads yaml config
+func (sender *MailSender) Init(senderSettings map[string]string, logger moira.Logger,
+	location *time.Location, dateTimeFormat string) error {
+
 	sender.URL = senderSettings["url"]
 	sender.Login = senderSettings["login"]
 	sender.Password = senderSettings["password"]
@@ -62,8 +74,10 @@ func (sender *MailSender) Init(senderSettings map[string]string, logger moira.Lo
 	return nil
 }
 
-//SendEvents implements Sender interface Send
-func (sender *MailSender) SendEvents(events moira.NotificationEvents, contact moira.ContactData, trigger moira.TriggerData, throttled bool) error {
+// SendEvents implements Sender interface Send
+func (sender *MailSender) SendEvents(events moira.NotificationEvents, contact moira.ContactData,
+	trigger moira.TriggerData, plot []byte, throttled bool) error {
+
 	mailVars := &mailNotificationVars{}
 	mailVars.Link = fmt.Sprintf("%s/trigger/%s", sender.FrontURI, events[0].TriggerID)
 	mailVars.Throttled = throttled
@@ -104,13 +118,18 @@ func (sender *MailSender) SendEvents(events moira.NotificationEvents, contact mo
 		mailVars.DescriptionProvided = true
 	}
 
+	plotContents, plotCID := getPlotContents(plot)
+	mailVars.PlotCID = plotCID
+
 	args := &mailArgs{
 		Channel:  sender.Channel,
 		Address:  contact.Value,
 		Template: sender.Template,
 		Vars:     *mailVars,
 		Subject:  subject,
+		Contents: plotContents,
 	}
+
 	argsJSON, err := json.Marshal(args)
 	if err != nil {
 		return fmt.Errorf("failed to marshal json request body: %s", err)
@@ -137,6 +156,27 @@ func (sender *MailSender) SendEvents(events moira.NotificationEvents, contact mo
 		return fmt.Errorf("kontur.spam replied with error: %s", resp.Status)
 	}
 	return nil
+}
+
+// GetLocation implements Sender interface GetLocation
+func (sender *MailSender) GetLocation() *time.Location {
+	return sender.location
+}
+
+func getPlotContents(plot []byte) ([]content, string) {
+	var plotCID string
+	plotContents := make([]content, 0)
+	if len(plot) > 0 {
+		plotCID = "plot.png"
+		plotContent := content{
+			ContentID:   plotCID,
+			ContentName: plotCID,
+			ContentType: "image/png",
+			ContentData: fromBytesToBase64(plot),
+		}
+		plotContents = append(plotContents, plotContent)
+	}
+	return plotContents, plotCID
 }
 
 func formatDescription(desc string) string {

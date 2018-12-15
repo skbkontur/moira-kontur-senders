@@ -11,6 +11,7 @@ import (
 
 	"github.com/AlexAkulov/go-humanize"
 	"github.com/hiraq-golang/googl-shortener"
+
 	"github.com/moira-alert/moira"
 )
 
@@ -37,8 +38,10 @@ type SmsSender struct {
 	location *time.Location
 }
 
-//Init read yaml config
-func (sender *SmsSender) Init(senderSettings map[string]string, logger moira.Logger, location *time.Location, dateTimeFormat string) error {
+// Init read yaml config
+func (sender *SmsSender) Init(senderSettings map[string]string, logger moira.Logger,
+	location *time.Location, dateTimeFormat string) error {
+
 	sender.URL = senderSettings["url"]
 	sender.Login = senderSettings["login"]
 	sender.Password = senderSettings["password"]
@@ -49,8 +52,10 @@ func (sender *SmsSender) Init(senderSettings map[string]string, logger moira.Log
 	return nil
 }
 
-//SendEvents implements Sender interface Send
-func (sender *SmsSender) SendEvents(events moira.NotificationEvents, contact moira.ContactData, trigger moira.TriggerData, throttled bool) error {
+// SendEvents implements Sender interface Send
+func (sender *SmsSender) SendEvents(events moira.NotificationEvents, contact moira.ContactData,
+	trigger moira.TriggerData, plot []byte, throttled bool) error {
+
 	const maxMessageSize = 280
 	const truncatedText = "...and %d\n"
 	const throtledText = "throttled\n"
@@ -148,4 +153,9 @@ func (sender *SmsSender) SendEvents(events moira.NotificationEvents, contact moi
 	}
 	log.Debugf("kontur.sms answer:\n%s", string(body))
 	return nil
+}
+
+// GetLocation implements Sender interface GetLocation
+func (sender *SmsSender) GetLocation() *time.Location {
+	return sender.location
 }
