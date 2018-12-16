@@ -154,8 +154,3 @@ func (sender *SmsSender) SendEvents(events moira.NotificationEvents, contact moi
 	log.Debugf("kontur.sms answer:\n%s", string(body))
 	return nil
 }
-
-// GetLocation implements Sender interface GetLocation
-func (sender *SmsSender) GetLocation() *time.Location {
-	return sender.location
-}
