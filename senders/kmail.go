@@ -160,11 +160,6 @@ func (sender *MailSender) SendEvents(events moira.NotificationEvents, contact mo
 	return nil
 }
 
-// GetLocation implements Sender interface GetLocation
-func (sender *MailSender) GetLocation() *time.Location {
-	return sender.location
-}
-
 func getPlotContents(plot []byte) ([]content, string) {
 	var plotCID string
 	plotContents := make([]content, 0)
