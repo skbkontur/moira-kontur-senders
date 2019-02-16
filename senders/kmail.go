@@ -44,7 +44,7 @@ type mailNotificationVars struct {
 	DescriptionProvided bool                `json:"desc_provided"`
 	TriggerName         string              `json:"name"`
 	Tags                string              `json:"tags"`
-	TriggerState        string              `json:"trigger_state"`
+	TriggerState        moira.State         `json:"trigger_state"`
 	TestNotification    bool                `json:"is_test"`
 	PlotCID             string              `json:"plot_cid"`
 	PlotCIDProvided     bool                `json:"plot_cid_provided"`
@@ -92,8 +92,8 @@ func (sender *MailSender) SendEvents(events moira.NotificationEvents, contact mo
 		vars := map[string]string{
 			"metric":      event.Metric,
 			"timestamp":   time.Unix(event.Timestamp, 0).In(sender.location).Format(sender.DateTimeFormat),
-			"oldstate":    event.OldState,
-			"state":       event.State,
+			"oldstate":    string(event.OldState),
+			"state":       string(event.State),
 			"value":       value,
 			"warn_value":  strconv.FormatFloat(trigger.WarnValue, 'f', -1, 64),
 			"error_value": strconv.FormatFloat(trigger.ErrorValue, 'f', -1, 64),
