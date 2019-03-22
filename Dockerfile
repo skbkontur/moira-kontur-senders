@@ -2,7 +2,6 @@ FROM golang:1.11.5 as builder
 
 ARG NOTIFIER_BRANCH=master
 
-RUN go get -v github.com/hiraq-golang/googl-shortener
 RUN go get -v github.com/AlexAkulov/go-humanize
 
 RUN go get github.com/moira-alert/moira
