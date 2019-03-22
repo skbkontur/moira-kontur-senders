@@ -27,8 +27,8 @@ type smsAddressArgs struct {
 }
 
 type shortenerArgs struct {
-	longUrl  string `json:"long_url"`
-	shortUrl string `json:"link"`
+	LongUrl  string `json:"long_url"`
+	ShortUrl string `json:"link"`
 }
 
 // SmsSender implements moira sender interface via kontur mail
@@ -64,8 +64,11 @@ func (sender *SmsSender) Init(senderSettings map[string]string, logger moira.Log
 // SendEvents implements Sender interface Send
 func (sender *SmsSender) SendEvents(events moira.NotificationEvents, contact moira.ContactData, trigger moira.TriggerData, plot []byte, throttled bool) error {
 	link := trigger.GetTriggerURI(sender.FrontURI)
-	if err := sender.simplifyLink(&link); err != nil {
-		sender.logger.Warningf(err.Error())
+	shortLink, err := sender.getShortLink(link)
+	if err != nil {
+		sender.logger.Warningf("failed to get short link: %s", err.Error())
+	} else {
+		link = shortLink
 	}
 	phoneNumber, err := buildPhoneNumber(contact)
 	if err != nil {
@@ -169,18 +172,18 @@ func (sender *SmsSender) sendSms(phoneNumber, message string) error {
 	return nil
 }
 
-func (sender *SmsSender) simplifyLink(longLink *string) error {
+func (sender *SmsSender) getShortLink(longLink string) (string, error) {
 	if sender.shortenerURL == "" && sender.shortenerAuth == "" {
-		return nil
+		return longLink, nil
 	}
-	reqStruct := shortenerArgs{longUrl: *longLink}
+	reqStruct := shortenerArgs{LongUrl: longLink}
 	reqJSON, err := json.Marshal(reqStruct)
 	if err != nil {
-		return err
+		return "", err
 	}
 	request, err := http.NewRequest("POST", sender.shortenerURL, bytes.NewBuffer(reqJSON))
 	if err != nil {
-		return err
+		return "", err
 	}
 	request.Header.Set("Content-Type", "application/json")
 	request.Header.Set("Authorization", sender.shortenerAuth)
@@ -190,21 +193,24 @@ func (sender *SmsSender) simplifyLink(longLink *string) error {
 		defer response.Body.Close()
 	}
 	if err != nil {
-		return err
+		return "", err
 	}
-	if response.StatusCode != 201 {
-		return fmt.Errorf("shortener api replied with %s", response.Status)
+	if !isAllowedResponseCode(response.StatusCode) {
+		return "", fmt.Errorf("shortener api replied with %s", response.Status)
 	}
 	var respStruct shortenerArgs
 	respJSON, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		return err
+		return "", err
 	}
 	err = json.Unmarshal(respJSON, &respStruct)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	longLink = &respStruct.shortUrl
-	return nil
+	return respStruct.ShortUrl, nil
+}
+
+func isAllowedResponseCode(responseCode int) bool {
+	return (responseCode >= 200) && (responseCode <= 299)
 }
