@@ -1,21 +1,21 @@
 sudo: required
 services:
-  - docker
+- docker
 git:
   depth: 1000
 notifications:
   slack:
-    secure: HEexFOE027rYqv8a4RkByDYo6gPggYyx4+R85RO92KR3PmcUEN0YzM7vk9HXV8eJc+8/xdDfIDqsK6R9NzT59Y80RivlaTiMjHpFb1EIAPKjRUfMpg6aGDUrztIbCx6+PdQn2irr0Yp8wbsXUr5xWFlsBuh0kw19GZmFdDqvikkIT81EsS8misf1xDsMcFQsNrTotwtfzGQAXlhUBKcocoif2a5y/nh/RaixcjROt6WXzOfWJ8jElJOTdJR4V0Zx/BLxBtbT0q9V1+jeliRCVURJWOe2atWtvnj6shtfe1n53Hat0wfv0AzQpXXpW1xYRg/nRZlzoqbivuNIpV4RfpBgrPxytgiTKIfR2A2qBSsg4RgMoQZkDTdVuGcXWA3O08LX4k02bZSa38HTMjzQ1xZ4qhZ77He5+Ik+NpvOMqnKcrGLalk6lv87BOQQrF0dvzZVIrHptkXRCiStCWt3x9qZeR4/BTtSzXzWiMZGFNICCjE+TbXgAJbnT7dgNIkc+33LIBPUwg2VVs+zZNuTJScu2BQahu/y1DR4GgKvSrCBPWSNSbcmH1ZCgTcTrirnCbc56neWd9oqVoIjjvFCPDl1zu/lJjpfmZEaahOI411wP4Ek8IftA6792sywqp10ZxVW3iN9/XGWGE37Udl6XOJpWLRiy1zWhojF2y5tq+Y=
+    secure: KFY4ZoKNt8RH9rMs0jPqceMBEFxGd3ADoYB+yWjUGtrfZyYFJZtmJ8OyEE2bMhoR5j/FRiGENh4hcu78zXNlSWOxBBAdtbz0n48vec0kDi6xYrMr3EEe3WTOIPqDo//xQrIW/2tfqBUhJ3ojqUXTSy1cjOwcLCUOqEH89nMquo+xaZ1ePbZMquhKOSxfti78ntsBwMYsj4Cn/x2xAlWaKjHT+cRGrvnq0u3W+NUqFkL/Gx8vyfnshGoMBxqQO6RJhx9+sTRzpcLQe5beGbx6JwPcKU/RGeE+IZvkwYDo5pA4dZtCfjGQsJG//XSh/nY9QN3xQZUMy1WqEBLBhztcUfGYR+dOMKQyU85g8WXS906j3H6hrCMtFd9LNaiZ10vwK+Kgm2yHV/yajkYdTH+R853qpYHIxo2ZkYZ2lx+InYfv/drzNo35eYu6hb6GSmYhNO3qgH3KBANmpbMXMYBKnl+HTOWnLRImeA4No99Z8gFTsD5orR6vNSNx7Twk70yYYdrTOc2xGluBKYzqWZhv6dqi6K3RyotM9tdh1Gw33x0S2Egj9Gb457bJ1cVsaRq0sgu4oJXV7s/HScCVj4XkXZjzEBnvoSrUo7vuvp4nt0q91fkNzaXpzfSvxtFpJYClerB6x9vNCR7Pnq6CphrT6DBFk2Ptm0sqoO+08iR64XM=
   on_pull_requests: false
 script:
-  - sudo apt-get update
-  - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
+- sudo apt-get update
+- sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
 before_deploy:
-  - echo "$DOCKER_PASSWORD" | docker login -u="$DOCKER_USERNAME" --password-stdin
+- echo "$DOCKER_PASSWORD" | docker login -u="$DOCKER_USERNAME" --password-stdin
 deploy:
-  - provider: script
-    script:
-      - make push_docker_image GIT_BRANCH="${NOTIFIER_BRANCH}" TAG_ALIAS="${NOTIFIER_BRANCH////-}"
-    skip_cleanup: true
-    on:
-      all_branches: true
+- provider: script
+  script:
+  - make push_docker_image GIT_BRANCH="${NOTIFIER_BRANCH}" TAG_ALIAS="${NOTIFIER_BRANCH////-}"
+  skip_cleanup: true
+  on:
+    all_branches: true
