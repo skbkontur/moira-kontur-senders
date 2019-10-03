@@ -1,4 +1,4 @@
-FROM golang:1.12.6 as builder
+FROM golang:1.13.1 as builder
 
 ARG NOTIFIER_BRANCH=master
 
@@ -11,8 +11,6 @@ RUN git checkout $NOTIFIER_BRANCH
 COPY ./senders/ /go/src/github.com/moira-alert/moira/senders/kontur
 RUN sed -i "s/^[[:space:]]\+\/\///g" ./notifier/registrator.go
 
-RUN go get github.com/kardianos/govendor
-RUN govendor sync
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o build/notifier github.com/moira-alert/moira/cmd/notifier
 
 
