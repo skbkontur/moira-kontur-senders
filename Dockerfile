@@ -1,4 +1,4 @@
-FROM golang:1.13.1 as builder
+FROM golang:1.14.0 as builder
 
 ARG NOTIFIER_BRANCH=master
 
