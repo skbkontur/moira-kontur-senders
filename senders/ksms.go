@@ -62,7 +62,7 @@ func (sender *SmsSender) Init(senderSettings map[string]string, logger moira.Log
 }
 
 // SendEvents implements Sender interface Send
-func (sender *SmsSender) SendEvents(events moira.NotificationEvents, contact moira.ContactData, trigger moira.TriggerData, plot []byte, throttled bool) error {
+func (sender *SmsSender) SendEvents(events moira.NotificationEvents, contact moira.ContactData, trigger moira.TriggerData, plots [][]byte, throttled bool) error {
 	link := trigger.GetTriggerURI(sender.FrontURI)
 	shortLink, err := sender.getShortLink(link)
 	if err != nil {
