@@ -77,7 +77,7 @@ func (sender *MailSender) Init(senderSettings map[string]string, logger moira.Lo
 
 // SendEvents implements Sender interface Send
 func (sender *MailSender) SendEvents(events moira.NotificationEvents, contact moira.ContactData,
-	trigger moira.TriggerData, plot []byte, throttled bool) error {
+	trigger moira.TriggerData, plots [][]byte, throttled bool) error {
 
 	mailVars := &mailNotificationVars{}
 	mailVars.Link = fmt.Sprintf("%s/trigger/%s", sender.FrontURI, events[0].TriggerID)
@@ -119,7 +119,7 @@ func (sender *MailSender) SendEvents(events moira.NotificationEvents, contact mo
 		mailVars.DescriptionProvided = true
 	}
 
-	plotContents, plotCID := getPlotContents(plot)
+	plotContents, plotCID := getPlotContents(plots)
 	mailVars.PlotCID = plotCID
 	mailVars.PlotCIDProvided = len(mailVars.PlotCID) > 0
 
@@ -160,10 +160,11 @@ func (sender *MailSender) SendEvents(events moira.NotificationEvents, contact mo
 	return nil
 }
 
-func getPlotContents(plot []byte) ([]content, string) {
+func getPlotContents(plots [][]byte) ([]content, string) {
 	var plotCID string
 	plotContents := make([]content, 0)
-	if len(plot) > 0 {
+	if len(plots) > 0 {
+		plot := plots[0]
 		plotCID = "plot.png"
 		plotContent := content{
 			ContentID:   plotCID,
