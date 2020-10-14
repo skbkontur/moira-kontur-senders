@@ -78,7 +78,29 @@ func (sender *MailSender) Init(senderSettings map[string]string, logger moira.Lo
 // SendEvents implements Sender interface Send
 func (sender *MailSender) SendEvents(events moira.NotificationEvents, contact moira.ContactData,
 	trigger moira.TriggerData, plots [][]byte, throttled bool) error {
+	req, err := sender.createRequest(events, contact, trigger, plots, throttled)
+	if err != nil {
+		return err
+	}
 
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to call kontur.spam: %s", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == 400 {
+		log.Errorf("Delete message! kontur.spam replied with error: %s", resp.Status)
+		return nil
+	}
+	if resp.StatusCode != 201 {
+		return fmt.Errorf("kontur.spam replied with error: %s", resp.Status)
+	}
+	return nil
+}
+
+func (sender *MailSender) createRequest(events moira.NotificationEvents, contact moira.ContactData, trigger moira.TriggerData, plots [][]byte, throttled bool) (*http.Request, error) {
 	mailVars := &mailNotificationVars{}
 	mailVars.Link = fmt.Sprintf("%s/trigger/%s", sender.FrontURI, events[0].TriggerID)
 	mailVars.Throttled = throttled
@@ -134,30 +156,17 @@ func (sender *MailSender) SendEvents(events moira.NotificationEvents, contact mo
 
 	argsJSON, err := json.Marshal(args)
 	if err != nil {
-		return fmt.Errorf("failed to marshal json request body: %s", err)
+		return nil, fmt.Errorf("failed to marshal json request body: %s", err)
 	}
 
-	log.Debugf("Calling kontur.spam with body %s", string(argsJSON))
-
-	client := &http.Client{}
 	req, err := http.NewRequest("POST", sender.URL, bytes.NewBuffer(argsJSON))
+	if err != nil {
+		return nil, err
+	}
 	req.SetBasicAuth(sender.Login, sender.Password)
 	req.Header.Add("Content-Type", "application/json")
 
-	resp, err := client.Do(req)
-	if err != nil {
-		return fmt.Errorf("failed to call kontur.spam: %s", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode == 400 {
-		log.Errorf("Delete message! kontur.spam replied with error: %s", resp.Status)
-		return nil
-	}
-	if resp.StatusCode != 201 {
-		return fmt.Errorf("kontur.spam replied with error: %s", resp.Status)
-	}
-	return nil
+	return req, nil
 }
 
 func getPlotContents(plots [][]byte) ([]content, string) {
