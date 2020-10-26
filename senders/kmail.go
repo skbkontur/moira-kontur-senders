@@ -46,8 +46,7 @@ type mailNotificationVars struct {
 	Tags                string              `json:"tags"`
 	TriggerState        moira.State         `json:"trigger_state"`
 	TestNotification    bool                `json:"is_test"`
-	PlotCID             string              `json:"plot_cid"`
-	PlotCIDProvided     bool                `json:"plot_cid_provided"`
+	PlotCIDs            []string            `json:"plot_cids"`
 }
 
 type content struct {
@@ -141,9 +140,8 @@ func (sender *MailSender) createRequest(events moira.NotificationEvents, contact
 		mailVars.DescriptionProvided = true
 	}
 
-	plotContents, plotCID := getPlotContents(plots)
-	mailVars.PlotCID = plotCID
-	mailVars.PlotCIDProvided = len(mailVars.PlotCID) > 0
+	plotContents, plotCIDs := getPlotContents(plots)
+	mailVars.PlotCIDs = plotCIDs
 
 	args := &mailArgs{
 		Channel:  sender.Channel,
@@ -169,21 +167,23 @@ func (sender *MailSender) createRequest(events moira.NotificationEvents, contact
 	return req, nil
 }
 
-func getPlotContents(plots [][]byte) ([]content, string) {
-	var plotCID string
+func getPlotContents(plots [][]byte) ([]content, []string) {
 	plotContents := make([]content, 0)
+	plotCIDs := make([]string, 0)
 	if len(plots) > 0 {
-		plot := plots[0]
-		plotCID = "plot.png"
-		plotContent := content{
-			ContentID:   plotCID,
-			ContentName: plotCID,
-			ContentType: "image/png",
-			ContentData: fromBytesToBase64(plot),
+		for i, plot := range plots {
+			plotCID := fmt.Sprintf("plot%d.png", i)
+			plotContent := content{
+				ContentID:   plotCID,
+				ContentName: plotCID,
+				ContentType: "image/png",
+				ContentData: fromBytesToBase64(plot),
+			}
+			plotContents = append(plotContents, plotContent)
+			plotCIDs = append(plotCIDs, plotCID)
 		}
-		plotContents = append(plotContents, plotContent)
 	}
-	return plotContents, plotCID
+	return plotContents, plotCIDs
 }
 
 func formatDescription(desc string) string {
