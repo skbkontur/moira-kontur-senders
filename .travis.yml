@@ -1,15 +1,22 @@
 sudo: required
 services:
 - docker
+language: go
+go:
+  - "1.15.2"
 git:
   depth: 1000
 notifications:
   slack:
     secure: KFY4ZoKNt8RH9rMs0jPqceMBEFxGd3ADoYB+yWjUGtrfZyYFJZtmJ8OyEE2bMhoR5j/FRiGENh4hcu78zXNlSWOxBBAdtbz0n48vec0kDi6xYrMr3EEe3WTOIPqDo//xQrIW/2tfqBUhJ3ojqUXTSy1cjOwcLCUOqEH89nMquo+xaZ1ePbZMquhKOSxfti78ntsBwMYsj4Cn/x2xAlWaKjHT+cRGrvnq0u3W+NUqFkL/Gx8vyfnshGoMBxqQO6RJhx9+sTRzpcLQe5beGbx6JwPcKU/RGeE+IZvkwYDo5pA4dZtCfjGQsJG//XSh/nY9QN3xQZUMy1WqEBLBhztcUfGYR+dOMKQyU85g8WXS906j3H6hrCMtFd9LNaiZ10vwK+Kgm2yHV/yajkYdTH+R853qpYHIxo2ZkYZ2lx+InYfv/drzNo35eYu6hb6GSmYhNO3qgH3KBANmpbMXMYBKnl+HTOWnLRImeA4No99Z8gFTsD5orR6vNSNx7Twk70yYYdrTOc2xGluBKYzqWZhv6dqi6K3RyotM9tdh1Gw33x0S2Egj9Gb457bJ1cVsaRq0sgu4oJXV7s/HScCVj4XkXZjzEBnvoSrUo7vuvp4nt0q91fkNzaXpzfSvxtFpJYClerB6x9vNCR7Pnq6CphrT6DBFk2Ptm0sqoO+08iR64XM=
   on_pull_requests: false
+before_install:
+  - sudo apt-get update
+  - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
+install:
+  - go get -v -t -d ./...
 script:
-- sudo apt-get update
-- sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
+  - go test -v ./...
 before_deploy:
 - echo "$DOCKER_PASSWORD" | docker login -u="$DOCKER_USERNAME" --password-stdin
 deploy:
